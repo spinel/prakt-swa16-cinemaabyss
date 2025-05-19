@@ -15,12 +15,18 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
+      id-token: write
 
     steps:
       - name: Checkout repository
@@ -36,21 +42,31 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository }}
+
       - name: Build and push proxy service
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v4
         with:
           context: ./src/microservices/proxy
           file: ./src/microservices/proxy/Dockerfile
           push: true
           tags: ${{ env.REGISTRY }}/${{ github.repository }}/proxy-service:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Build and push events service
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v4
         with:
           context: ./src/microservices/events
           file: ./src/microservices/events/Dockerfile
           push: true
           tags: ${{ env.REGISTRY }}/${{ github.repository }}/events-service:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Run API tests
         run: |
