@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: proxy-service
-        image: ghcr.io/spinel/swa16-cinemaabyss/proxy:latest
+        image: ghcr.io/spinel/prakt-swa16-cinemaabyss/proxy:latest
         ports:
         - containerPort: 8000
         env:
