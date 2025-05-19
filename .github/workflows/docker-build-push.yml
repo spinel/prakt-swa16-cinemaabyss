@@ -1,9 +1,5 @@
 name: Build and Push Docker Images
 
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
-
 on:
   push:
     branches: [ main ]
@@ -14,6 +10,10 @@ on:
       - 'src/microservices/events/**'
   release:
     types: [published]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   build-and-push:
@@ -42,7 +42,7 @@ jobs:
           context: ./src/microservices/proxy
           file: ./src/microservices/proxy/Dockerfile
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/proxy:latest
+          tags: ${{ env.REGISTRY }}/${{ github.repository }}/proxy-service:latest
 
       - name: Build and push events service
         uses: docker/build-push-action@v2
@@ -50,24 +50,12 @@ jobs:
           context: ./src/microservices/events
           file: ./src/microservices/events/Dockerfile
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/events:latest
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-          cache: 'npm'
-          cache-dependency-path: './tests/postman/package-lock.json'
-
-      - name: Install dependencies
-        working-directory: ./tests/postman
-        run: npm ci
+          tags: ${{ env.REGISTRY }}/${{ github.repository }}/events-service:latest
 
       - name: Run API tests
-        working-directory: ./tests/postman
-        run: npm run test:local
-        env:
-          POSTMAN_API_URL: http://localhost:8000
-          POSTMAN_API_KEY: ${{ secrets.POSTMAN_API_KEY }}
+        run: |
+          cd tests/postman
+          npm install
+          npm run test:local
 
       

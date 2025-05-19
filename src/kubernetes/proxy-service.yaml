@@ -13,9 +13,11 @@ spec:
       labels:
         app: proxy-service
     spec:
+      imagePullSecrets:
+        - name: dockerconfigsecret
       containers:
       - name: proxy-service
-        image: ghcr.io/spinel/prakt-swa16-cinemaabyss/proxy:latest
+        image: ghcr.io/spinel/prakt-swa16-cinemaabyss/proxy-service:latest
         ports:
         - containerPort: 8000
         env:
@@ -50,8 +52,6 @@ spec:
             port: 8000
           initialDelaySeconds: 15
           periodSeconds: 20
-      imagePullSecrets:
-      - name: dockerconfigsecret
 ---
 apiVersion: v1
 kind: Service
@@ -62,7 +62,6 @@ spec:
   selector:
     app: proxy-service
   ports:
-  - port: 8000
+  - port: 80
     targetPort: 8000
-    name: http
   type: ClusterIP

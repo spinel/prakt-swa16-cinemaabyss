@@ -15,16 +15,18 @@ spec:
       labels:
         app: events-service
     spec:
+      imagePullSecrets:
+        - name: dockerconfigsecret
       containers:
       - name: events-service
-        image: ghcr.io/spinel/prakt-swa16-cinemaabyss/events:latest
+        image: ghcr.io/spinel/prakt-swa16-cinemaabyss/events-service:latest
         ports:
         - containerPort: 8082
         env:
-        - name: KAFKA_BROKER
-          value: kafka:9092
         - name: PORT
           value: "8082"
+        - name: KAFKA_BROKERS
+          value: "kafka:9092"
         resources:
           requests:
             cpu: "100m"
@@ -44,8 +46,6 @@ spec:
             port: 8082
           initialDelaySeconds: 15
           periodSeconds: 20
-      imagePullSecrets:
-      - name: dockerconfigsecret
 ---
 apiVersion: v1
 kind: Service
