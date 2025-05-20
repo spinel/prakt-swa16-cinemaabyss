@@ -1,6 +1,7 @@
 name: Build and Push Docker Images
 
 on:
+  workflow_dispatch:
   push:
     branches: [ main ]
     paths:
@@ -18,7 +19,6 @@ env:
 permissions:
   contents: read
   packages: write
-  id-token: write
 
 jobs:
   build-and-push:
@@ -26,7 +26,6 @@ jobs:
     permissions:
       contents: read
       packages: write
-      id-token: write
 
     steps:
       - name: Checkout repository
@@ -40,38 +39,68 @@ jobs:
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ secrets.PACKAGES_TOKEN }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Extract metadata for Docker
         id: meta
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@v3
         with:
           images: ${{ env.REGISTRY }}/${{ github.repository }}
+          tags: |
+            type=ref,event=branch
+            type=sha,format=short
+            latest
 
       - name: Build and push proxy service
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v2
         with:
           context: ./src/microservices/proxy
           file: ./src/microservices/proxy/Dockerfile
           push: true
-          tags: ${{ env.REGISTRY }}/${{ github.repository }}/proxy-service:latest
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       - name: Build and push events service
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v2
         with:
           context: ./src/microservices/events
           file: ./src/microservices/events/Dockerfile
           push: true
-          tags: ${{ env.REGISTRY }}/${{ github.repository }}/events-service:latest
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install Docker Compose
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker-compose-plugin
+          docker compose version
+
+      - name: Install dependencies
+        run: |
+          cd tests/postman
+          npm install
+
+      - name: Start services
+        run: |
+          docker compose up -d
+          sleep 30  # Ждем пока сервисы запустятся
 
       - name: Run API tests
         run: |
           cd tests/postman
-          npm install
           npm run test:local
+        env:
+          PROXY_URL: http://localhost:8000
+          EVENTS_URL: http://localhost:8001
 
       
