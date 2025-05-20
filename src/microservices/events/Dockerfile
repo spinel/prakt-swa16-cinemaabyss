@@ -1,30 +1,31 @@
-# Используем официальный образ Go
-FROM golang:1.21-alpine
+FROM golang:1.23-alpine AS builder
 
-# Устанавливаем необходимые пакеты
-RUN apk add --no-cache netcat-openbsd
-
-# Устанавливаем рабочую директорию
 WORKDIR /app
 
-# Копируем файлы зависимостей
+# Copy go mod and sum files
 COPY go.mod ./
-COPY go.sum ./
 
-# Загружаем зависимости
+# Download all dependencies
 RUN go mod download
 
-# Копируем исходный код
+# Copy the source code
 COPY . .
 
-# Делаем скрипт ожидания исполняемым
-RUN chmod +x wait-for-kafka.sh
+# Build the application
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o events-service .
 
-# Собираем приложение
-RUN go build -o main .
+# Use a smaller image for the final application
+FROM alpine:latest  
 
-# Открываем порт
+RUN apk --no-cache add ca-certificates
+
+WORKDIR /root/
+
+# Copy the binary from builder
+COPY --from=builder /app/events-service .
+
+# Expose the application port
 EXPOSE 8082
 
 # Запускаем приложение через скрипт ожидания
-CMD ["./wait-for-kafka.sh", "./main"] 
+CMD ["./wait-for-kafka.sh", "./events-service"]
