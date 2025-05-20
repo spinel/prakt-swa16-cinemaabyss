@@ -7,6 +7,8 @@ on:
     paths:
       - 'src/**'
       - '.github/workflows/docker-build-push.yml'
+      - 'src/microservices/proxy/**'
+      - 'src/microservices/events/**'
   release:
     types: [published]
 
@@ -81,3 +83,19 @@ jobs:
           labels: ${{ steps.meta-movies.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Build and push proxy service
+        uses: docker/build-push-action@v2
+        with:
+          context: ./src/microservices/proxy
+          file: ./src/microservices/proxy/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/proxy:latest
+
+      - name: Build and push events service
+        uses: docker/build-push-action@v2
+        with:
+          context: ./src/microservices/events
+          file: ./src/microservices/events/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/events:latest
