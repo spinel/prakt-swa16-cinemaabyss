@@ -54,18 +54,14 @@ jobs:
             type=sha,format=short
             type=ref,event=branch
             latest
-          platforms: linux/amd64,linux/arm64
 
-      - name: Build and push Proxy Service Docker image
-        uses: docker/build-push-action@v4
+      - name: Build and push proxy service
+        uses: docker/build-push-action@v2
         with:
           context: ./src/microservices/proxy
+          file: ./src/microservices/proxy/Dockerfile
           push: true
-          tags: ${{ steps.meta-proxy.outputs.tags }}
-          labels: ${{ steps.meta-proxy.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          platforms: linux/amd64,linux/arm64
+          tags: ${{ env.REGISTRY }}/proxy:latest
 
       - name: Extract metadata (tags, labels) for Events Service
         id: meta-events
@@ -78,18 +74,14 @@ jobs:
             type=sha,format=short
             type=ref,event=branch
             latest
-          platforms: linux/amd64,linux/arm64
 
-      - name: Build and push Events Service Docker image
-        uses: docker/build-push-action@v4
+      - name: Build and push events service
+        uses: docker/build-push-action@v2
         with:
           context: ./src/microservices/events
+          file: ./src/microservices/events/Dockerfile
           push: true
-          tags: ${{ steps.meta-events.outputs.tags }}
-          labels: ${{ steps.meta-events.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          platforms: linux/amd64,linux/arm64
+          tags: ${{ env.REGISTRY }}/events:latest
 
       - name: Extract metadata (tags, labels) for Monolith
         id: meta-monolith
@@ -102,7 +94,6 @@ jobs:
             type=sha,format=short
             type=ref,event=branch
             latest
-          platforms: linux/amd64,linux/arm64
 
       - name: Build and push Monolith Docker image
         uses: docker/build-push-action@v4
@@ -113,7 +104,6 @@ jobs:
           labels: ${{ steps.meta-monolith.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          platforms: linux/amd64,linux/arm64
 
       - name: Extract metadata (tags, labels) for Movies Service
         id: meta-movies
@@ -126,7 +116,6 @@ jobs:
             type=sha,format=short
             type=ref,event=branch
             latest
-          platforms: linux/amd64,linux/arm64
 
       - name: Build and push Movies Service Docker image
         uses: docker/build-push-action@v4
@@ -137,4 +126,4 @@ jobs:
           labels: ${{ steps.meta-movies.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          platforms: linux/amd64,linux/arm64
+
