@@ -78,6 +78,7 @@ jobs:
         with:
           node-version: '18'
           cache: 'npm'
+          cache-dependency-path: 'tests/postman/package-lock.json'
 
       - name: Install Docker Compose
         run: |
@@ -86,9 +87,8 @@ jobs:
           docker compose version
 
       - name: Install dependencies
-        run: |
-          cd tests/postman
-          npm install
+        working-directory: tests/postman
+        run: npm install
 
       - name: Start services
         run: |
@@ -96,9 +96,8 @@ jobs:
           sleep 30  # Ждем пока сервисы запустятся
 
       - name: Run API tests
-        run: |
-          cd tests/postman
-          npm run test:local
+        working-directory: tests/postman
+        run: npm run test:local
         env:
           PROXY_URL: http://localhost:8000
           EVENTS_URL: http://localhost:8001
