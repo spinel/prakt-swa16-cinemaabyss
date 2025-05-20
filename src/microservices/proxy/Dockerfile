@@ -1,23 +1,31 @@
-# Используем официальный образ Go
-FROM golang:1.23-alpine
+FROM golang:1.23-alpine AS builder
 
-# Устанавливаем рабочую директорию
 WORKDIR /app
 
-# Копируем файлы зависимостей
+# Copy go mod and sum files
 COPY go.mod ./
 
-# Загружаем зависимости
+# Download all dependencies
 RUN go mod download
 
-# Копируем исходный код
+# Copy the source code
 COPY . .
 
-# Собираем приложение
-RUN go build -o main .
+# Build the application
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o proxy-service .
 
-# Открываем порт
+# Use a smaller image for the final application
+FROM alpine:latest  
+
+RUN apk --no-cache add ca-certificates
+
+WORKDIR /root/
+
+# Copy the binary from builder
+COPY --from=builder /app/proxy-service .
+
+# Expose the application port
 EXPOSE 8000
 
-# Запускаем приложение
-CMD ["./main"] 
+# Command to run the executable
+CMD ["./proxy-service"]
