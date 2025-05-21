@@ -7,6 +7,8 @@ on:
     paths:
       - 'src/**'
       - '.github/workflows/docker-build-push.yml'
+      - 'src/microservices/proxy/**'
+      - 'src/microservices/events/**'
   release:
     types: [published]
 
@@ -23,7 +25,6 @@ jobs:
     permissions:
       contents: read
       packages: write
-      id-token: write
 
     steps:
       - name: Checkout repository
