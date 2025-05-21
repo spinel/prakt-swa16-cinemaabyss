@@ -290,7 +290,9 @@ cat .docker/config.json | base64
   Откройте логи event-service и сделайте скриншот обработки событий
 
 #### Шаг 3
-Добавьте сюда скриншота вывода при вызове https://cinemaabyss.example.com/api/movies и  скриншот вывода event-service после вызова тестов.
+- [скриншот movies](docs/images/3_movies.png)
+- [скриншот тестов](docs/images/3_tests.png)
+- [скриншот events-service](docs/images/3_events-service.png)
 
 
 # Задание 4
@@ -366,10 +368,10 @@ minikube tunnel
 Потом вызовите 
 https://cinemaabyss.example.com/api/movies и приложите скриншот
 
+- [скриншот movies](docs/images/4_movies.png)
+
 
 ## Удаляем все
-
-Установите https://istio.io/latest/docs/reference/commands/istioctl/
 
 ```bash
 kubectl delete all --all -n cinemaabyss
