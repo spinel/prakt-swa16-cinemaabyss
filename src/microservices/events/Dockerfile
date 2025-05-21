@@ -24,7 +24,11 @@ WORKDIR /root/
 # Copy the binary from builder
 COPY --from=builder /app/events-service .
 
+# Copy the wait-for-kafka.sh script
 COPY wait-for-kafka.sh ./
+
+# Make the script executable
+RUN chmod +x wait-for-kafka.sh
 
 # Expose the application port
 EXPOSE 8082
