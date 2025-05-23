@@ -41,6 +41,8 @@ spec:
           requests:
             cpu: {{ .Values.proxyService.resources.requests.cpu }}
             memory: {{ .Values.proxyService.resources.requests.memory }}
+      imagePullSecrets:
+        - name: dockerconfigjson
 ---
 apiVersion: v1
 kind: Service
